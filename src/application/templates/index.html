@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block style_block %}
+    
+{% endblock %}
+
+{% block content %}
+
+    <h1 id="">AP Poll</h1>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>School</th>
+                <th>Conference</th>
+                <th>Record</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ranking in week_rankings %}
+            {% set team = ranking.team.get() %}
+            <tr>
+                <td>{{ ranking.rank }}</td>
+                <td>{{ team.name }}</td>
+                <td>{{ team.conference }}</td>
+                <td>{{ ranking.record }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock content %}
