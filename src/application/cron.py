@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 
 from google.appengine.api import urlfetch
 
-from models import Ranking, Sport, Team, Week
+from models import Ranking, Sport, Team, Week, Notification
 
 
 def check_basketball_ap_poll():
@@ -60,5 +60,9 @@ def check_basketball_ap_poll():
         team_entity = Team.get_or_insert(team_key, name=team, conference=conference)
         ranking = Ranking(team=team_entity.key, week=week.key, rank=rank, record=record)
         ranking.put()
+
+    notifications = Notification.get_notifications(sport)
+    from application.notifications import email
+    email.send_emails(notifications)
 
     return response.content

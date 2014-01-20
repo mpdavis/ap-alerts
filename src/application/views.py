@@ -11,6 +11,7 @@ For example the *say_hello* handler, handling the URL route '/hello/<username>',
 import logging
 
 from flask import request, render_template, flash, url_for, redirect
+from flask.views import View
 
 from flask_cache import Cache
 
@@ -25,9 +26,11 @@ cache = Cache(app)
 
 
 def index():
+    context = {}
+
     weeks = Week.query().order(-Week.week).fetch()
     week_rankings = Ranking.query().filter(Ranking.week == weeks[0].key).order(Ranking.rank).fetch()
-    logging.warn(week_rankings)
+    
 
     return render_template('index.html', week_rankings=week_rankings)
 

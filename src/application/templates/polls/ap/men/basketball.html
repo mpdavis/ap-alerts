@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block style_block %}
+    
+{% endblock %}
+
+{% block content %}
+
+    <div id="alert-success" class="alert alert-success alert-dismissable" style="display: none;">
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+      <strong>Success!</strong> You are signed up to receive email alerts for this poll.
+    </div>
+
+    <div>
+        <h1 class="pull-left">AP Poll - Men's Basketball</h1>
+        <button type="button" class="btn btn-success pull-right" style="margin-top: 20px;" data-toggle="modal" data-target="#sign-up-modal">Get Email Alerts</a>
+    </div>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>School</th>
+                <th>Conference</th>
+                <th>Record</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ranking in week_rankings %}
+            {% set team = ranking.team.get() %}
+            <tr>
+                <td>{{ ranking.rank }}</td>
+                <td>{{ team.name }}</td>
+                <td>{{ team.conference }}</td>
+                <td>{{ ranking.record }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="modal fade" id="sign-up-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="myModalLabel">Email Alerts</h4>
+          </div>
+          
+          {% if user %}
+          <div class="modal-body">
+            <p style="font-size: 24px; text-align: center;">Sign up for alerts when a new poll is released.</p>
+            </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button id="get-alert-submit" type="button" class="btn btn-success">Get Alerts</button>
+              </div>
+          {% else %}
+          <div class="modal-body">
+            <p style="font-size: 24px; text-align: center;">You must login to sign up for alerts.</p>
+            </div>
+              <div class="modal-footer">
+                <a href="{{ url_for('register') }}" type="button" class="btn btn-success" data-dismiss="modal">Register</a>
+                <a href="{{ url_for('login') }}" type="button" class="btn btn-success">Login</a>
+              </div>
+          {% endif %}
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+{% endblock content %}
+
+{% block tail_script %}
+
+    <script type="text/javascript">
+
+        $(document).ready(function(){
+
+            function submit_alert() {
+                $.post("{{ url_for('submit-alert') }}", {sport_keyname: "{{ sport_keyname }}"}, 
+                    function(response)
+                    {
+                        var data = $.parseJSON(response);
+
+                        $("#sign-up-modal").modal('hide');
+                        $("#alert-success").show();
+                    });
+            }
+
+            $("#get-alert-submit").click(function() {
+                submit_alert();
+            });
+        });
+
+    </script>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+

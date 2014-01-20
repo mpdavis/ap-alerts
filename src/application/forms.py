@@ -1,18 +1,22 @@
-# """
-# forms.py
+"""
+forms.py
 
-# Web forms based on Flask-WTForms
+Web forms based on Flask-WTForms
 
-# See: http://flask.pocoo.org/docs/patterns/wtforms/
-#      http://wtforms.simplecodes.com/
+See: http://flask.pocoo.org/docs/patterns/wtforms/
+     http://wtforms.simplecodes.com/
 
-# """
+"""
 
-# from flaskext import wtf
-# from flaskext.wtf import validators
+from flaskext import wtf
+from flaskext.wtf import validators
 # from wtforms.ext.appengine.ndb import model_form
 
 # from .models import ExampleModel
+
+
+class SignUpForm(wtf.Form):
+    email = wtf.TextField('Email', validators=[validators.Email()])
 
 
 # class ClassicExampleForm(wtf.Form):
