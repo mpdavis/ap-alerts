@@ -26,6 +26,7 @@ app.add_url_rule('/logout/', view_func=auth_views.Logout.as_view('logout'))
 app.add_url_rule('/settings/', view_func=base_views.Settings.as_view('settings'))
 
 app.add_url_rule('/ajax/submit_alert', view_func=base_views.SubmitAlert.as_view('submit-alert'))
+# app.add_url_rule('/ajax/submit_alerts', view_func=base_views.SubmitAlerts.as_view('submit-alerts'))
 
 app.add_url_rule('/oauth/google_login', view_func=auth_views.GoogleLogin.as_view('google_login'))
 app.add_url_rule('/oauth/google_authorized', view_func=auth_views.GoogleAuthorized.as_view('google_authorized'))

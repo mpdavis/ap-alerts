@@ -10,3 +10,7 @@
 #maincontent {
     margin-top: 20px;
 }
+
+.grow {
+    width: 100%;
+}

@@ -15,6 +15,9 @@ class User(ndb.Model):
     salt = ndb.StringProperty()
     created = ndb.DateTimeProperty(auto_now=True)
 
+    ap_basketball_men_email = ndb.BooleanProperty(default=False)
+    ap_basketball_women_email = ndb.BooleanProperty(default=False)
+
     def get_id(self):
         return self.key.id()
 
@@ -28,7 +31,7 @@ class User(ndb.Model):
         return False
 
     def get_notifications(self):
-        return Notification.query().filter(Notification.email == self.email).fetch()
+        return Notification.query().filter(Notification.user == self.key).fetch()
 
     @classmethod
     def get_by_email(cls, email):

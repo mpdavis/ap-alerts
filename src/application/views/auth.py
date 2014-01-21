@@ -96,9 +96,6 @@ class GoogleAuthorized(BaseView):
                 if email:
                     user = User.get_by_email(email)
 
-                import logging
-                logging.warn(user)
-
                 if not user:
                     user = User(email=email)
                     user.put()

@@ -1,5 +1,7 @@
 
+
 import json
+import logging
 
 from flask import render_template
 from flask import request
@@ -23,7 +25,20 @@ class Settings(BaseView):
 
     def get(self):
         context = self.get_context()
+
+        context['ap_basketball_men_email'] = self.user.ap_basketball_men_email
+
         return render_template('settings.html', **context)
+
+    def post(self):
+        for alert in request.form:
+            if hasattr(self.user, alert):
+                value = True if request.form[alert] == 'true' else False
+                setattr(self.user, alert, value)
+
+        self.user.put()
+
+        return json.dumps({'success': True})
 
 
 class SubmitAlert(BaseView):

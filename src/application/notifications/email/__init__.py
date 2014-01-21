@@ -24,5 +24,11 @@ def generate_body(template, context=None, **kwargs):
 
 def send_emails(notifications):
 
+    body = generate_body('notifications/email/alert.html')
+
     for notification in notifications:
-        send_email(notification.user.get().email, 'AP Poll Men\'s Basketball', 'This is a test')
+        send_email(notification.user.get().email, 'New Poll Alert', body)
+
+
+def welcome_user(email):
+    

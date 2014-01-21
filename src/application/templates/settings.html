@@ -6,26 +6,85 @@
 
 {% block content %}
 
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Poll</th>
-            <th>Gender</th>
-            <th>Sport</th>
-            <th>Link</th>
-            <th>Alerts</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>AP</td>
-            <td>Men</td>
-            <td>Basketball</td>
-            <td><a href="{{ url_for('ap-basketball-men') }}">Poll</a></td>
-            <td><input type="checkbox"></td>
-        </tr>
-    </tbody>
-</table>
+<div class="row">
 
+    <div class="col-md-6">
+
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">User Info</h3>
+            </div>
+            <div class="panel-body">
+                
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col-md-6">
+
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">Alert Settings</h3>
+            </div>
+            <div class="panel-body">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th class="grow">Poll</th>
+                            <th>Gender</th>
+                            <th>Sport</th>
+                            <th>Link</th>
+                            <th>Alerts</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>AP</td>
+                            <td>Men</td>
+                            <td>Basketball</td>
+                            <td><a href="{{ url_for('ap-basketball-men') }}" class="btn btn-xs btn-success">Go To Poll</a></td>
+                            <td><input id="ap-basketball-men-email" type="checkbox" {% if ap_basketball_men_email %}checked{% endif %}></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <button id="submit-alerts" class="btn btn-success pull-right">Save Alerts</button>
+            </div>
+        </div>
+
+        
+    </div>
+
+</div>
 
 {% endblock content %}
+
+{% block tail_script %}
+
+<script type="text/javascript">
+
+    $(document).ready(function(){
+
+        function submit_alerts() {
+            $.post("{{ url_for('settings') }}", {
+                    ap_basketball_men_email: $('#ap-basketball-men-email').prop('checked'),
+                    ap_basketball_women_email: $('#ap-basketball-women-email').prop('checked')
+                }, 
+                function(response)
+                {
+                    var data = $.parseJSON(response);
+
+                    $("#alert-success").show();
+                });
+        }
+
+        $("#submit-alerts").click(function() {
+            submit_alerts();
+        });
+    });
+
+
+</script>
+
+{% endblock %}
