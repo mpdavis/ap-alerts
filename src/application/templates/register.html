@@ -31,6 +31,8 @@ body {
 
 {% block no_nav_content %}
 
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
 <div class="outer">
     <div class="middle">
         <div class="inner well">
@@ -53,7 +55,7 @@ body {
 
             <hr>
 
-            <form class="form-horizontal" role="form">
+            <form class="form-horizontal" role="form" method="post">
                 <div class="form-group">
                     <div class="col-sm-12">
                         <input type="email" class="form-control" id="register-email" placeholder="Email">
@@ -64,13 +66,22 @@ body {
                         <input type="password" class="form-control" id="register-password" placeholder="Password">
                     </div>
                 </div>
+                <div class="form-group">
+                    <div class="col-sm-12">
+                        <input type="password" class="form-control" id="confirm-password" placeholder="Confirm Password">
+                    </div>
+                </div>
 
                 <div class="form-group">
                     <div class="col-sm-offset-3 col-sm-6">
-                        <button type="submit" class="btn btn-block btn-primary">Register</button>
+                        <button id="submit" type="button" class="btn btn-block btn-primary">Register</button>
                     </div>
                 </div>
             </form>
+
+            <div style="text-align: center;">
+                <a href="{{ url_for('login') }}">or login</a>
+            </div>
 
         </div>
     </div>
@@ -78,3 +89,115 @@ body {
 
 
 {% endblock no_nav_content %}
+
+
+{% block tail_script %}
+
+<script type="text/javascript">
+    
+    $(document).ready(function(){
+
+        var email = $('#register-email');
+        var pass = $("#register-password");
+        var conf = $("#confirm-password");
+        var csrf = $('#csrf_token');
+        var conf_visible = false;
+
+        email.popover({
+            html: true,
+            trigger: 'manual',
+            content: 'An account has already been registered with that email.',
+            title: 'Whoops.'
+        });
+
+        conf.popover({
+            trigger: 'manual',
+            content: 'Your passwords don\'t match.',
+            title: 'Whoops.'
+        });
+
+        var csrftoken = $('meta[name=csrf-token]').attr('content')
+
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken)
+                }
+            }
+        })
+
+        function confirm_password() {
+            if (!(pass.val() == conf.val())) {
+                conf_visible = true;
+                conf.popover('show');
+                setTimeout(function() {
+                    conf.popover('hide');
+                    conf_visible = false;
+                }, 3000);
+            }
+        }
+
+        function register() {
+            if (!conf_visible) {
+                confirm_password();
+            }
+
+            $.ajax({
+                "url": "{{ url_for('register') }}",
+                "method": "POST",
+                "data": {
+                    email: email.val(),
+                    password: pass.val(),
+                    confirm_password: conf.val()
+                }
+            })
+            .done(function(data) {
+                var response = $.parseJSON(data);
+
+                if (response.authorized) {
+                    window.location.replace("{{ url_for('settings') }}")
+                } else {
+                    if (response.error_message) {
+                        console.log(data)
+                        if (response.error_message == 'existing_user') {
+                            email.popover('show');
+                            setTimeout(function() {
+                                email.popover('hide');
+                            }, 5000);
+                        }
+
+                        if (response.error_message == 'no_user') {
+                            email.popover('show');
+                            setTimeout(function() {
+                                email.popover('hide');
+                            }, 5000);
+                        }
+                    }   
+                }
+
+            });
+        };
+
+        pass.keypress(function(e) {
+            if (e && e.which == 13) {
+                register();
+            }
+        })
+
+        $("#submit").click(function() {
+            register();
+        });
+
+        $("#password_confirm").blur(function() {
+            confirm_password();
+        });
+    });
+
+</script>
+
+{% endblock %}
+
+
+
+
+

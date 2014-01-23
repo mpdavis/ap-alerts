@@ -1,8 +1,11 @@
 
+
 import json
+import logging
 
 from flask import redirect
 from flask import render_template
+from flask import request
 from flask import session
 from flask import url_for
 
@@ -11,9 +14,11 @@ from flask_login import login_required
 
 from flask_oauth import OAuth
 
+from application.forms import LoginForm
+from application.forms import RegisterForm
 from application.views import BaseView
-
 from application.models import User
+from application.notifications.email import welcome_user
 
 oauth = OAuth()
 
@@ -44,7 +49,31 @@ class Register(BaseView):
 
     def get(self):
         context = self.get_context()
+        context['form'] = RegisterForm()
         return render_template('register.html', **context)
+
+    def post(self):
+        form = RegisterForm(request.form)
+        registered = False
+        errors = ''
+        if form.validate():
+            password, salt = User.encode_password(form.password.data)
+
+            current_user = User.get_by_email(form.email.data)
+            if current_user:
+                return json.dumps({'registered': False, 'error': 'current_user'})
+
+            new_user = User(email=form.email.data, password=password, salt=salt)
+            new_user.put()
+            welcome_user(new_user)
+            registered = True
+
+            flask_login.login_user(new_user)
+
+        if form.errors:
+            errors = form.errors
+
+        return json.dumps({'registered': registered, 'error': errors})
 
 
 class Login(BaseView):
@@ -53,7 +82,33 @@ class Login(BaseView):
 
     def get(self):
         context = self.get_context()
+        context['form'] = LoginForm()
         return render_template('login.html', **context)
+
+    def post(self):
+        form = LoginForm(request.form)
+        authorized = False
+        message = ''
+
+        if form.validate():
+            authorized = User.check_password(form.password.data, form.email.data)
+            logging.warn(form)
+            logging.warn(authorized)
+
+            if not authorized:
+                message = "incorrect_password"
+            else:
+                user = User.get_by_email(form.email.data)
+                flask_login.login_user(user)
+        else:
+            message = "no_user"
+
+        response = json.dumps({
+            'authorized': authorized,
+            'error_message': message
+        })
+
+        return response
 
 
 class Logout(BaseView):
@@ -99,6 +154,7 @@ class GoogleAuthorized(BaseView):
                 if not user:
                     user = User(email=email)
                     user.put()
+                    welcome_user(user)
 
                 if user:
                     flask_login.login_user(user)
@@ -110,7 +166,7 @@ class GoogleAuthorized(BaseView):
                 return redirect(url_for('google_login'))
             return res.read()
 
-        return redirect('/')
+        return redirect(url_for('settings'))
 
 
 @google.tokengetter

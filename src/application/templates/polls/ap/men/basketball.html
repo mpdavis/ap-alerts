@@ -13,7 +13,11 @@
 
     <div>
         <h1 class="pull-left">AP Poll - Men's Basketball</h1>
+        {% if not user.ap_basketball_men_email %}
         <button type="button" class="btn btn-info pull-right" style="margin-top: 20px;" data-toggle="modal" data-target="#sign-up-modal">Get alerts for this poll</a>
+        {% else %}
+        <div class="pull-right"><span class="glyphicon glyphicon-ok" style="color: green; margin-top: 40px;"></span> You receive alerts for this poll. <a href="{{ url_for('settings') }}">edit</a></div>
+        {% endif %}
     </div>
     <table class="table table-bordered table-striped table-hover">
         <thead>
@@ -47,7 +51,7 @@
           
           {% if user %}
           <div class="modal-body">
-            <p style="font-size: 24px; text-align: center;">We can alert you when this poll is updated.  This lets you be the first person in the office to </p>
+            <p style="font-size: 24px; text-align: center;">We can alert you when this poll is updated.  This lets you be the first person in the office to get the poll data.</p>
             </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>

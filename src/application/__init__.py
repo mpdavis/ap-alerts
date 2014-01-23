@@ -4,6 +4,7 @@ Initialize Flask app
 """
 from flask import Flask
 import flask_login
+from flask_wtf.csrf import CsrfProtect
 
 import os
 from flask_debugtoolbar import DebugToolbarExtension
@@ -13,6 +14,8 @@ from application.views.auth import user_unauthorized_callback
 from application.views.auth import load_user
 
 app = Flask('application')
+CsrfProtect(app)
+
 
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)

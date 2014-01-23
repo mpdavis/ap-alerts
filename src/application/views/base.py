@@ -13,6 +13,17 @@ from application.views import BaseView
 from application.models import Notification
 
 
+class Test(BaseView):
+
+    def get(self):
+        from application.notifications import email
+        from application.models import User
+        user = User.get_ap_bb_men_email()
+        logging.warn(user)
+        email.send_emails(user)
+        return 'Test'
+
+
 class Index(BaseView):
 
     def get(self):

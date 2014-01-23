@@ -5,10 +5,13 @@ from bs4 import BeautifulSoup
 
 from google.appengine.api import urlfetch
 
-from models import Ranking, Sport, Team, Week, Notification
+from models import Ranking, Sport, Team, Week, User
+
+from application.notifications import email
 
 
 def check_basketball_ap_poll():
+
     ap_url = "http://collegebasketball.ap.org/poll"
 
     response = urlfetch.fetch(ap_url)
@@ -25,7 +28,6 @@ def check_basketball_ap_poll():
 
     # Find current week
     all_h2 = soup('h2', class_='block-title')
-    logging.warn(all_h2)
     for h2 in all_h2:
         if h2.text.lower().startswith('week'):
             this_week = h2.text.split(' ')[1]
@@ -33,12 +35,12 @@ def check_basketball_ap_poll():
     week = Week.query().filter(Week.sport == sport.key).filter(Week.week == this_week).fetch()
 
     if week:
-        logging.warn("WEEK found, already seen it.")
+        logging.debug("No new info.")
         return ''
     else:
         week = Week(sport=sport.key, week=this_week)
         week.put()
-        logging.warn("WEEK not found, new info!")
+        logging.warn("New week. Lets get to scraping.")
 
     # Parse rank info from the page
     for tag in soup('tr'):
@@ -61,8 +63,7 @@ def check_basketball_ap_poll():
         ranking = Ranking(team=team_entity.key, week=week.key, rank=rank, record=record)
         ranking.put()
 
-    notifications = Notification.get_notifications(sport)
-    from application.notifications import email
-    email.send_emails(notifications)
+    users = User.get_ap_bb_men_email()
+    email.send_emails(users)
 
     return response.content

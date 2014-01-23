@@ -6,24 +6,48 @@
 
 {% block content %}
 
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Poll</th>
-            <th>Gender</th>
-            <th>Sport</th>
-            <th>Link</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>AP</td>
-            <td>Men</td>
-            <td>Basketball</td>
-            <td><a href="{{ url_for('ap-basketball-men') }}">Poll</a></td>
-        </tr>
-    </tbody>
-</table>
+<div class="row">
 
+    <div class="col-md-12">
+
+        <div class="jumbotron">
+            <h1>PollAlerts</h1>
+            <p>PollAlerts gives you email alerts the second that polls are updated.</p>
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">Current Polls</h3>
+            </div>
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Poll</th>
+                        <th>Gender</th>
+                        <th>Sport</th>
+                        <th>Link</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>AP</td>
+                        <td>Men</td>
+                        <td>Basketball</td>
+                        <td><a href="{{ url_for('ap-basketball-men') }}" class="btn btn-xs btn-success">Go To Poll</a></td>
+                    </tr>
+                    <tr>
+                        <td>AP</td>
+                        <td>Women</td>
+                        <td>Basketball</td>
+                        <td>Coming Soon!</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
 {% endblock content %}

@@ -1,15 +1,18 @@
 
+import json
+import logging
 
 from flask import render_template
 
 from google.appengine.api import mail
+from google.appengine.api import urlfetch
 from google.appengine.ext import deferred
 
 
-def send_email(to_address, subject, body):
+# def send_email(to_address, subject, body):
 
-    sender = "Michael Davis <mike.philip.davis@gmail.com>"
-    deferred.defer(mail.send_mail, sender=sender, to=to_address, subject=subject, body=body)
+#     sender = "PollAlerts <mike.philip.davis@gmail.com>"
+#     deferred.defer(mail.send_mail, sender=sender, to=to_address, subject=subject, body=body)
 
 
 def generate_body(template, context=None, **kwargs):
@@ -22,13 +25,44 @@ def generate_body(template, context=None, **kwargs):
     return render_template(template, **ctx)
 
 
-def send_emails(notifications):
+def send_emails(users):
 
     body = generate_body('notifications/email/alert.html')
+    subject = "New PollAlert"
+    send_email(users, subject, body)
 
-    for notification in notifications:
-        send_email(notification.user.get().email, 'New Poll Alert', body)
+
+def welcome_user(user):
+    body = generate_body('notifications/email/welcome.html')
+    subject = "Welcome to PollAlerts"
+    send_email(user, subject, body)
 
 
-def welcome_user(email):
-    
+def send_email(users, subject, html, from_email="no-reply@pollalerts.com", from_name="PollAlerts"):
+
+    if not isinstance(users, list):
+        users = [users]
+
+    to_addresses = []
+    for user in users:
+        to_addresses.append({"email": user.email, 'type': 'bcc'})
+
+    payload = {
+        "key": "0F0tSWKOJExYgekt_IhCGg",
+        "message": {
+            "html":         html,
+            "subject":      subject,
+            "from_email":   from_email,
+            "from_name":    from_name,
+            "to":           to_addresses
+        }
+    }
+
+    content = urlfetch.fetch(
+        "https://mandrillapp.com/api/1.0/messages/send.json",
+        method=urlfetch.POST,
+        headers={'Content-Type': 'application/json'},
+        payload=json.dumps(payload)
+    )
+
+    logging.debug(content.content)

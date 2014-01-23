@@ -1,5 +1,5 @@
 cron:
 - description: checking ap poll
   url: /cron/check_basketball
-  schedule: every 5 minutes from 05:00 to 20:00
+  schedule: every 1 minutes from 05:00 to 20:00
   timezone: America/Chicago

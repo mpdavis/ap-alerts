@@ -20,8 +20,8 @@ from application.views import poll as poll_views
 
 # Home page
 app.add_url_rule('/', view_func=base_views.Index.as_view('index'))
-app.add_url_rule('/register/', view_func=auth_views.Register.as_view('register'))
-app.add_url_rule('/login/', view_func=auth_views.Login.as_view('login'))
+app.add_url_rule('/register/', view_func=auth_views.Register.as_view('register'), methods=['GET', 'POST'])
+app.add_url_rule('/login/', view_func=auth_views.Login.as_view('login'), methods=['GET', 'POST'])
 app.add_url_rule('/logout/', view_func=auth_views.Logout.as_view('logout'))
 app.add_url_rule('/settings/', view_func=base_views.Settings.as_view('settings'))
 
@@ -32,6 +32,8 @@ app.add_url_rule('/oauth/google_login', view_func=auth_views.GoogleLogin.as_view
 app.add_url_rule('/oauth/google_authorized', view_func=auth_views.GoogleAuthorized.as_view('google_authorized'))
 
 app.add_url_rule('/ap/basketball/men', view_func=poll_views.MensBasketball.as_view('ap-basketball-men'))
+
+app.add_url_rule('/test', view_func=base_views.Test.as_view('test'))
 
 # # Say hello
 # app.add_url_rule('/hello/<username>', 'say_hello', view_func=views.say_hello)

@@ -16,6 +16,7 @@ class Config(object):
     # Set secret keys for CSRF protection
     SECRET_KEY = CSRF_SECRET_KEY
     CSRF_SESSION_KEY = SESSION_KEY
+    WTF_CSRF_SECRET_KEY = CSRF_SECRET_KEY
     # Flask-Cache settings
     CACHE_TYPE = 'gaememcached'
 

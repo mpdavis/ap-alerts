@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block meta %}
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+{% endblock %}
+
 {% block style_block %}
 
 <style>
@@ -23,6 +27,10 @@
 
 body {
     background-color: #202d3b;
+}
+
+.popover{
+    width:250px;   
 }
 
 </style>
@@ -53,28 +61,116 @@ body {
 
             <hr>
 
-            <form class="form-horizontal" role="form">
+            <form class="form-horizontal" role="form" method="post">
                 <div class="form-group">
                     <div class="col-sm-12">
-                        <input type="email" class="form-control" id="register-email" placeholder="Email">
+                        <input type="email" class="form-control" id="login-email" placeholder="Email">
                     </div>
                 </div>
                 <div class="form-group">
                     <div class="col-sm-12">
-                        <input type="password" class="form-control" id="register-password" placeholder="Password">
+                        <input type="password" class="form-control" id="login-password" placeholder="Password">
                     </div>
                 </div>
 
                 <div class="form-group">
                     <div class="col-sm-offset-3 col-sm-6">
-                        <button type="submit" class="btn btn-block btn-primary">Login</button>
+                        <button type="button" id="submit" class="btn btn-block btn-primary">Login</button>
                     </div>
                 </div>
             </form>
+
+            <div style="text-align: center;">
+                <a href="{{ url_for('register') }}">or register</a>
+            </div>
 
         </div>
     </div>
 </div>
 
-
 {% endblock no_nav_content %}
+
+{% block tail_script %}
+
+<script type="text/javascript">
+    
+    $(document).ready(function(){
+
+        var email = $('#login-email');
+        var pass = $("#login-password");
+
+        email.popover({
+            html: true,
+            trigger: 'manual',
+            content: 'No account exists with that email.<br><br><a href="{{ url_for('register') }}">Register</a>',
+            title: 'Whoops.'
+        });
+
+        pass.popover({
+            html: true,
+            trigger: 'manual',
+            content: 'That password is incorrect.',
+            title: 'Whoops.'
+        });
+
+        var csrftoken = $('meta[name=csrf-token]').attr('content')
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken)
+                }
+            }
+        })
+
+        function login() {
+
+            $.ajax({
+                "url": "{{ url_for('login') }}",
+                "method": "POST",
+                "data": {
+                    email: email.val(),
+                    password: pass.val(),
+                },
+            })
+            .done(function(data) {
+                var response = $.parseJSON(data);
+
+                if (response.authorized) {
+                    window.location.replace("{{ url_for('settings') }}")
+                } else {
+                    if (response.error_message) {
+                        console.log(data)
+                        if (response.error_message == 'incorrect_password') {
+                            pass.popover('show');
+                            setTimeout(function() {
+                                pass.popover('hide');
+                            }, 5000);
+                        }
+
+                        if (response.error_message == 'no_user') {
+                            email.popover('show');
+                            setTimeout(function() {
+                                email.popover('hide');
+                            }, 5000);
+                        }
+                    }   
+                }
+
+            });
+        };
+
+        pass.keypress(function(e) {
+            if (e && e.which == 13) {
+                login();
+            }
+        })
+
+        $("#submit").click(function() {
+            login();
+        });
+
+    });
+
+</script>
+
+{% endblock %}

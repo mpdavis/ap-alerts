@@ -15,7 +15,15 @@
                 <h3 class="panel-title">User Info</h3>
             </div>
             <div class="panel-body">
-                
+                <table class="table table-bordered table-striped">
+                    
+                    <tbody>
+                        <tr>
+                            <td>Email</td>
+                            <td>{{ user.email }}</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -53,6 +61,9 @@
             </div>
         </div>
 
+        <div id="alert-success" class="alert alert-success" style="display: none;">
+          <strong>Success!</strong> Your alerts settings were saved successfully.
+        </div>
         
     </div>
 
@@ -76,6 +87,7 @@
                     var data = $.parseJSON(response);
 
                     $("#alert-success").show();
+                    window.setTimeout(function() { $(".alert-success").hide(); }, 3000);
                 });
         }
 
