@@ -25,6 +25,10 @@ body {
     background-color: #202d3b;
 }
 
+.popover{
+    width:250px;   
+}
+
 </style>
 
 {% endblock %}
@@ -101,20 +105,6 @@ body {
         var pass = $("#register-password");
         var conf = $("#confirm-password");
         var csrf = $('#csrf_token');
-        var conf_visible = false;
-
-        email.popover({
-            html: true,
-            trigger: 'manual',
-            content: 'An account has already been registered with that email.',
-            title: 'Whoops.'
-        });
-
-        conf.popover({
-            trigger: 'manual',
-            content: 'Your passwords don\'t match.',
-            title: 'Whoops.'
-        });
 
         var csrftoken = $('meta[name=csrf-token]').attr('content')
 
@@ -128,11 +118,16 @@ body {
 
         function confirm_password() {
             if (!(pass.val() == conf.val())) {
-                conf_visible = true;
+
+                conf.popover({
+                    trigger: 'manual',
+                    content: 'Your passwords don\'t match.',
+                    title: 'Whoops.'
+                });
+
                 conf.popover('show');
                 setTimeout(function() {
                     conf.popover('hide');
-                    conf_visible = false;
                 }, 3000);
             }
         }
@@ -158,23 +153,55 @@ body {
                     window.location.replace("{{ url_for('settings') }}")
                 } else {
                     if (response.error_message) {
-                        console.log(data)
-                        if (response.error_message == 'existing_user') {
+
+                        if (response.error_message == 'current_user') {
+
+                            email.popover({
+                                html: true,
+                                trigger: 'manual',
+                                content: 'An account has already been registered with that email.<br><br><a href="{{ url_for('login') }}">Login</a>',
+                                title: 'Whoops.'
+                            });
+
                             email.popover('show');
+
                             setTimeout(function() {
                                 email.popover('hide');
                             }, 5000);
                         }
 
-                        if (response.error_message == 'no_user') {
+                        if (response.error_message == 'invalid_email') {
+
+                            email.popover({
+                                html: true,
+                                trigger: 'manual',
+                                content: 'You must enter a valid email address.',
+                                title: 'Whoops.'
+                            });
+
                             email.popover('show');
                             setTimeout(function() {
                                 email.popover('hide');
+                            }, 5000);
+
+                        }
+
+                        if (response.error_message == 'password_length') {
+
+                            pass.popover({
+                                html: true,
+                                trigger: 'manual',
+                                content: 'You password must be at least 5 characters long.',
+                                title: 'Whoops.'
+                            });
+
+                            pass.popover('show');
+                            setTimeout(function() {
+                                pass.popover('hide');
                             }, 5000);
                         }
                     }   
                 }
-
             });
         };
 

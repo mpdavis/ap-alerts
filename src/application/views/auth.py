@@ -55,13 +55,14 @@ class Register(BaseView):
     def post(self):
         form = RegisterForm(request.form)
         registered = False
-        errors = ''
+        error = ''
         if form.validate():
+
             password, salt = User.encode_password(form.password.data)
 
             current_user = User.get_by_email(form.email.data)
             if current_user:
-                return json.dumps({'registered': False, 'error': 'current_user'})
+                return json.dumps({'registered': False, 'error_message': 'current_user'})
 
             new_user = User(email=form.email.data, password=password, salt=salt)
             new_user.put()
@@ -71,9 +72,20 @@ class Register(BaseView):
             flask_login.login_user(new_user)
 
         if form.errors:
-            errors = form.errors
 
-        return json.dumps({'registered': registered, 'error': errors})
+            email_errors = form.errors.get('email', None)
+            password_errors = form.errors.get('password', None)
+
+            if email_errors:
+                logging.warn(email_errors)
+                if 'Invalid email address.' in email_errors:
+                    error = "invalid_email"
+
+            if password_errors:
+                if 'Field must be at least 5 characters long.' in password_errors:
+                    error = 'password_length'
+
+        return json.dumps({'registered': registered, 'error_message': error})
 
 
 class Login(BaseView):
@@ -92,8 +104,6 @@ class Login(BaseView):
 
         if form.validate():
             authorized = User.check_password(form.password.data, form.email.data)
-            logging.warn(form)
-            logging.warn(authorized)
 
             if not authorized:
                 message = "incorrect_password"

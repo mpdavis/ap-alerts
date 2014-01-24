@@ -14,7 +14,7 @@ from wtforms import validators
 
 class RegisterForm(wtforms.Form):
     email = wtforms.TextField('Email', validators=[validators.Email(), validators.Required()])
-    password = wtforms.TextField('Password', validators=[validators.Required()])
+    password = wtforms.TextField('Password', validators=[validators.Required(), validators.Length(min=5)])
     confirm_password = wtforms.TextField('Confirm Password', validators=[validators.Required()])
 
 
