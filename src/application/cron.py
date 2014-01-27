@@ -5,9 +5,83 @@ from bs4 import BeautifulSoup
 
 from google.appengine.api import urlfetch
 
-from models import Ranking, Sport, Team, Week, User
+from models import Ranking, Sport, Team, Week, User, Poll
 
 from application.notifications import email
+
+
+def check_basketball_coaches_poll():
+    url = "http://www.usatoday.com/sports/ncaab/polls/"
+
+    response = urlfetch.fetch(url)
+
+    poll = Poll.get_or_insert(
+        'college:coaches:basketball:men:2013_2014',
+        poll='coaches',
+        sport='basketball',
+        gender='men',
+        year='2013_2014'
+    )
+
+    soup = BeautifulSoup(response.content)
+
+    week = Week.query().filter(Week.poll == poll.key).filter(Week.week == '13').fetch()
+
+    if week:
+        logging.debug('No new info found for college:basketball:women:2013')
+        return ''
+    else:
+        week = Week(poll=poll.key, week='13')
+        week.put()
+
+    rankings = []
+
+    # table = soup('table', class_='poll')
+    for tr in soup('tr'):
+        ranking_tds = tr.find_all('td', class_='ranking')
+        if ranking_tds:
+            rank = tr('td', class_='ranking')[0].text.strip()
+            record = tr('td', class_='record')[0].text.strip()
+            first_name = tr('span', class_='first_name')[0].text.strip()
+            last_name = tr('span', class_='last_name')[0].text.strip()
+            team = '%s %s' % (first_name, last_name)
+            previous = tr('td', class_='ranking_previous')[0].text.strip()
+
+            team_entity = Team.get_or_insert(team, name=team)
+            ranking = Ranking(team=team_entity.key, week=week.key, rank=int(rank), record=record, previous=previous)
+            ranking.put()
+            rankings.append(ranking)
+
+    users = User.get_coaches_bb_men_email()
+    email.send_alert(users, rankings, "USA Today Coaches Poll - Men's Basketball")
+
+    return response.content
+
+
+def check_basketball_ap_womens():
+    url = "http://espn.go.com/womens-college-basketball/rankings/_/poll/1/week/13/"
+    response = urlfetch.fetch(url)
+    poll = Poll.get_or_insert(
+        'college:basketball:women:2013',
+        poll='ap',
+        sport='basketball',
+        gender='women',
+        year='2013',
+    )
+
+    soup = BeautifulSoup(response.content)
+
+    week = Week.query().filter(Week.poll == poll.key).filter(Week.week == '13').fetch()
+
+    if week:
+        logging.debug('No new info found for college:basketball:women:2013')
+    else:
+        week = Week(poll=poll.key, week='13')
+        week.put()
+
+    rankings = []
+
+
 
 
 def check_basketball_ap_poll():
@@ -42,6 +116,8 @@ def check_basketball_ap_poll():
         week.put()
         logging.warn("New week. Lets get to scraping.")
 
+    rankings = []
+
     # Parse rank info from the page
     for tag in soup('tr'):
 
@@ -62,8 +138,9 @@ def check_basketball_ap_poll():
         team_entity = Team.get_or_insert(team_key, name=team, conference=conference)
         ranking = Ranking(team=team_entity.key, week=week.key, rank=rank, record=record)
         ranking.put()
+        rankings.append(ranking)
 
     users = User.get_ap_bb_men_email()
-    email.send_emails(users)
+    email.send_alert(users, rankings, "AP Men's Basketball")
 
     return response.content

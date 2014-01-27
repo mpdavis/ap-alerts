@@ -10,8 +10,6 @@ from flask_login import login_required
 
 from application.views import BaseView
 
-from application.models import Notification
-
 
 class Test(BaseView):
 
@@ -38,6 +36,7 @@ class Settings(BaseView):
         context = self.get_context()
 
         context['ap_basketball_men_email'] = self.user.ap_basketball_men_email
+        context['coaches_basketball_men_email'] = self.user.coaches_basketball_men_email
 
         return render_template('settings.html', **context)
 
@@ -57,7 +56,10 @@ class SubmitAlert(BaseView):
     def post(self):
 
         user = self.user
-        sport_keyname = request.form['sport_keyname']
+        alert_name = request.form['alert_name']
+        if hasattr(user, alert_name):
+            setattr(user, alert_name, True)
 
-        Notification.create_notification(user, sport_keyname, kind='email')
+        user.put()
+
         return json.dumps({'success': True})

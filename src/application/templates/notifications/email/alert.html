@@ -1,8 +1,30 @@
-<p>Hi,</p>
+{% extends "notifications/email/base.html" %}
 
-<p>There is a new poll available for you to see.</p>
+{% block body %}
 
-<p><a href="http://www.pollalerts.com/ap/basketball/men">AP Men's Basketball</a></p>
+<h1>{{ title }}</h1>
+<br>
 
-<p>Thanks,<br>
-The PollAlerts Team</p>
+<table class="table table-bordered table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Rank</th>
+            <th>School</th>
+            <th>Conference</th>
+            <th>Record</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ranking in rankings %}
+        {% set team = ranking.team.get() %}
+        <tr>
+            <td>{{ ranking.rank }}</td>
+            <td>{{ team.name }}</td>
+            <td>{{ team.conference }}</td>
+            <td>{{ ranking.record }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

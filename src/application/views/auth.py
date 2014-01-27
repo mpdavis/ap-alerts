@@ -50,7 +50,7 @@ class Register(BaseView):
     def get(self):
         context = self.get_context()
         context['form'] = RegisterForm()
-        return render_template('register.html', **context)
+        return render_template('auth/register.html', **context)
 
     def post(self):
         form = RegisterForm(request.form)
@@ -95,7 +95,7 @@ class Login(BaseView):
     def get(self):
         context = self.get_context()
         context['form'] = LoginForm()
-        return render_template('login.html', **context)
+        return render_template('auth/login.html', **context)
 
     def post(self):
         form = LoginForm(request.form)

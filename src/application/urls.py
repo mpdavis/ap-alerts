@@ -32,6 +32,7 @@ app.add_url_rule('/oauth/google_login', view_func=auth_views.GoogleLogin.as_view
 app.add_url_rule('/oauth/google_authorized', view_func=auth_views.GoogleAuthorized.as_view('google_authorized'))
 
 app.add_url_rule('/ap/basketball/men', view_func=poll_views.MensBasketball.as_view('ap-basketball-men'))
+app.add_url_rule('/coaches/basketball/men', view_func=poll_views.CoachesBasketballMen.as_view('coaches-basketball-men'))
 
 app.add_url_rule('/test', view_func=base_views.Test.as_view('test'))
 
@@ -54,6 +55,7 @@ app.add_url_rule('/test', view_func=base_views.Test.as_view('test'))
 # app.add_url_rule('/examples/<int:example_id>/delete', view_func=views.delete_example, methods=['POST'])
 
 app.add_url_rule('/cron/check_basketball', view_func=cron.check_basketball_ap_poll, methods=['GET'])
+app.add_url_rule('/cron/test', view_func=cron.check_basketball_coaches_poll, methods=['GET'])
 
 
 ## Error handlers

@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block meta %}
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+{% endblock %}
+
 {% block style_block %}
 
 <style>
@@ -34,8 +38,6 @@ body {
 {% endblock %}
 
 {% block no_nav_content %}
-
-<meta name="csrf-token" content="{{ csrf_token() }}">
 
 <div class="outer">
     <div class="middle">
@@ -133,9 +135,6 @@ body {
         }
 
         function register() {
-            if (!conf_visible) {
-                confirm_password();
-            }
 
             $.ajax({
                 "url": "{{ url_for('register') }}",
@@ -149,7 +148,7 @@ body {
             .done(function(data) {
                 var response = $.parseJSON(data);
 
-                if (response.authorized) {
+                if (response.registered) {
                     window.location.replace("{{ url_for('settings') }}")
                 } else {
                     if (response.error_message) {

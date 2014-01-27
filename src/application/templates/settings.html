@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
-{% block style_block %}
-    
+{% block meta %}
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 {% endblock %}
 
 {% block content %}
@@ -48,11 +48,18 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>AP</td>
+                            <td>AP Poll</td>
                             <td>Men</td>
                             <td>Basketball</td>
                             <td><a href="{{ url_for('ap-basketball-men') }}" class="btn btn-xs btn-success">Go To Poll</a></td>
                             <td><input id="ap-basketball-men-email" type="checkbox" {% if ap_basketball_men_email %}checked{% endif %}></td>
+                        </tr>
+                        <tr>
+                            <td>USA Today Coaches Poll</td>
+                            <td>Men</td>
+                            <td>Basketball</td>
+                            <td><a href="{{ url_for('coaches-basketball-men') }}" class="btn btn-xs btn-success">Go To Poll</a></td>
+                            <td><input id="coaches-basketball-men-email" type="checkbox" {% if coaches_basketball_men_email %}checked{% endif %}></td>
                         </tr>
                     </tbody>
                 </table>
@@ -77,18 +84,32 @@
 
     $(document).ready(function(){
 
-        function submit_alerts() {
-            $.post("{{ url_for('settings') }}", {
-                    ap_basketball_men_email: $('#ap-basketball-men-email').prop('checked'),
-                    ap_basketball_women_email: $('#ap-basketball-women-email').prop('checked')
-                }, 
-                function(response)
-                {
-                    var data = $.parseJSON(response);
+        var csrftoken = $('meta[name=csrf-token]').attr('content')
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken)
+                }
+            }
+        })
 
-                    $("#alert-success").show();
-                    window.setTimeout(function() { $(".alert-success").hide(); }, 3000);
-                });
+        function submit_alerts() {
+
+            $.ajax({
+                "url": "{{ url_for('settings') }}",
+                "method": "POST",
+                "data": {
+                    ap_basketball_men_email: $('#ap-basketball-men-email').prop('checked'),
+                    ap_basketball_women_email: $('#ap-basketball-women-email').prop('checked'),
+                    coaches_basketball_men_email: $('#coaches-basketball-men-email').prop('checked')
+                },
+            })
+            .done(function(data) {
+                var response = $.parseJSON(data);
+
+                $("#alert-success").show();
+                window.setTimeout(function() { $(".alert-success").hide(); }, 3000);
+            });
         }
 
         $("#submit-alerts").click(function() {
