@@ -5,142 +5,210 @@ from bs4 import BeautifulSoup
 
 from google.appengine.api import urlfetch
 
-from models import Ranking, Sport, Team, Week, User, Poll
+from models import Ranking, Team, Week, User, Poll
 
 from application.notifications import email
+from application.views import BaseView
 
 
-def check_basketball_coaches_poll():
-    url = "http://www.usatoday.com/sports/ncaab/polls/"
+class PollCronView(BaseView):
 
-    response = urlfetch.fetch(url)
+    url = None
+    level = None
+    poll = None
+    sport = None
+    gender = None
+    year = None
+    email_subject = None
 
-    poll = Poll.get_or_insert(
-        'college:coaches:basketball:men:2013_2014',
-        poll='coaches',
-        sport='basketball',
-        gender='men',
-        year='2013_2014'
-    )
+    def create_poll_key(self):
+        return '%s:%s:%s:%s:%s' % (self.level, self.poll, self.sport, self.gender, self.year)
 
-    soup = BeautifulSoup(response.content)
+    def get_poll(self):
+        poll = Poll.get_or_insert(
+            self.create_poll_key(),
+            level=self.level,
+            poll=self.poll,
+            sport=self.sport,
+            gender=self.gender,
+            year=self.year,
+        )
 
-    week = Week.query().filter(Week.poll == poll.key).filter(Week.week == '13').fetch()
+        return poll
 
-    if week:
-        logging.debug('No new info found for college:basketball:women:2013')
-        return ''
-    else:
-        week = Week(poll=poll.key, week='13')
+    def get_previous_week(self):
+        week = Week.query().filter(Week.poll == self.get_poll().key).order(-Week.week).fetch(1)
+        if not week:
+            return '-1'
+        return week[0].week
+
+    def parse_current_week(self, soup):
+        pass
+
+    def parse_team_info(self, soup):
+        pass
+
+    def get_users(self):
+        pass
+
+    def get(self):
+        response = urlfetch.fetch(self.url)
+
+        soup = BeautifulSoup(response.content)
+
+        old_week = self.get_previous_week()
+        current_week = self.parse_current_week(soup)
+
+        if old_week == current_week:
+            logging.debug('No new info for %s' % self.create_poll_key())
+            return ''
+
+        poll = self.get_poll()
+        logging.warn(current_week)
+        week = Week(poll=poll.key, week=current_week)
         week.put()
 
-    rankings = []
+        team_info = self.parse_team_info(soup)
 
-    # table = soup('table', class_='poll')
-    for tr in soup('tr'):
-        ranking_tds = tr.find_all('td', class_='ranking')
-        if ranking_tds:
-            rank = tr('td', class_='ranking')[0].text.strip()
-            record = tr('td', class_='record')[0].text.strip()
-            first_name = tr('span', class_='first_name')[0].text.strip()
-            last_name = tr('span', class_='last_name')[0].text.strip()
-            team = '%s %s' % (first_name, last_name)
-            previous = tr('td', class_='ranking_previous')[0].text.strip()
-
-            team_entity = Team.get_or_insert(team, name=team)
-            ranking = Ranking(team=team_entity.key, week=week.key, rank=int(rank), record=record, previous=previous)
+        rankings = []
+        for info in team_info:
+            team_entity = Team.get_or_insert(info['name'], name=info['name'])
+            ranking = Ranking(
+                team=team_entity.key,
+                week=week.key,
+                rank=int(info['rank']),
+                record=info['record'],
+                previous=info['previous']
+            )
             ranking.put()
             rankings.append(ranking)
 
-    users = User.get_coaches_bb_men_email()
-    email.send_alert(users, rankings, "USA Today Coaches Poll - Men's Basketball")
+        users = self.get_users()
+        if users:
+            email.send_alert(users, rankings, self.email_subject)
 
-    return response.content
+        return response.content
 
 
-def check_basketball_ap_womens():
+class WomenAPBasketball(PollCronView):
+
     url = "http://espn.go.com/womens-college-basketball/rankings/_/poll/1/week/13/"
-    response = urlfetch.fetch(url)
-    poll = Poll.get_or_insert(
-        'college:basketball:women:2013',
-        poll='ap',
-        sport='basketball',
-        gender='women',
-        year='2013',
-    )
+    level = 'college'
+    poll = 'ap'
+    sport = 'basketball'
+    gender = 'women'
+    year = '2013'
+    email_subject = "Women's AP Poll"
 
-    soup = BeautifulSoup(response.content)
+    def parse_current_week(self, soup):
+        return '13'
 
-    week = Week.query().filter(Week.poll == poll.key).filter(Week.week == '13').fetch()
+    def parse_team_info(self, soup):
+        info = []
+        rank = 1
 
-    if week:
-        logging.debug('No new info found for college:basketball:women:2013')
-    else:
-        week = Week(poll=poll.key, week='13')
-        week.put()
+        teams = soup.find_all('ul', class_='team-summary')
+        for row in teams:
+            team = row.find_all('a')[0].text
+            record = row('li', class_='record')[0].text
+            previous = row('span', class_='prev-rank')[0].text
 
-    rankings = []
+            team_info = {
+                'rank': rank,
+                'name': team,
+                'record': record,
+                'previous': previous,
+            }
+
+            info.append(team_info)
+
+            rank += 1
+
+        return info
+
+    def get_users(self):
+        return User.get_ap_bb_women_email()
 
 
+class MenAPBasketball(PollCronView):
+
+    url = "http://collegebasketball.ap.org/poll"
+    level = 'college'
+    poll = 'ap'
+    sport = 'basketball'
+    gender = 'men'
+    year = '2013'
+    email_subject = "Men's AP Poll"
+
+    def parse_current_week(self, soup):
+        all_h2 = soup('h2', class_='block-title')
+        for h2 in all_h2:
+            if h2.text.lower().startswith('week'):
+                this_week = h2.text.split(' ')[1]
+        return this_week
+
+    def get_users(self):
+        return User.get_ap_bb_men_email()
+
+    def parse_team_info(self, soup):
+        info = []
+
+        for tag in soup('tr'):
+
+            rank = tag(class_='trank')
+            if not len(rank) == 1:
+                logging.error('Parsing rank from AP table error.')
+            rank = int(rank[0].text)
+
+            all_links = tag('a')
+            if not len(all_links) == 2:
+                logging.error('Error parsing links from AP table.')
+            team = all_links[0].text
+
+            record = tag(class_='poll-record')[0].text.split(' ')[1]
+
+            info.append({
+                'rank': rank,
+                'name': team,
+                'record': record,
+                'previous': ''
+            })
+
+        return info
 
 
-def check_basketball_ap_poll():
+class MenCoachesBasketball(PollCronView):
 
-    ap_url = "http://collegebasketball.ap.org/poll"
+    url = "http://www.usatoday.com/sports/ncaab/polls/"
+    level = 'college'
+    poll = 'coaches'
+    sport = 'basketball'
+    gender = 'men'
+    year = '2013'
+    email_subject = "Men's USA Today Coaches Poll"
 
-    response = urlfetch.fetch(ap_url)
+    def parse_current_week(self, soup):
+        return '13'
 
-    if not response.status_code == 200:
-        return "ERROR"
+    def get_users(self):
+        return User.get_coaches_bb_men_email()
 
-    sport = Sport.get_or_insert('college:basketball:men:2013_2014',
-                                sport='basketball',
-                                gender='men',
-                                year='2013_2014')
+    def parse_team_info(self, soup):
+        info = []
 
-    soup = BeautifulSoup(response.content)
+        for tr in soup('tr'):
+            ranking_tds = tr.find_all('td', class_='ranking')
+            if ranking_tds:
+                rank = tr('td', class_='ranking')[0].text.strip()
+                record = tr('td', class_='record')[0].text.strip()
+                team = tr('span', class_='first_name')[0].text.strip()
+                previous = tr('td', class_='ranking_previous')[0].text.strip()
 
-    # Find current week
-    all_h2 = soup('h2', class_='block-title')
-    for h2 in all_h2:
-        if h2.text.lower().startswith('week'):
-            this_week = h2.text.split(' ')[1]
+                info.append({
+                    'rank': rank,
+                    'name': team,
+                    'record': record,
+                    'previous': previous
+                })
 
-    week = Week.query().filter(Week.sport == sport.key).filter(Week.week == this_week).fetch()
-
-    if week:
-        logging.debug("No new info.")
-        return ''
-    else:
-        week = Week(sport=sport.key, week=this_week)
-        week.put()
-        logging.warn("New week. Lets get to scraping.")
-
-    rankings = []
-
-    # Parse rank info from the page
-    for tag in soup('tr'):
-
-        rank = tag(class_='trank')
-        if not len(rank) == 1:
-            logging.error('Parsing rank from AP table error.')
-        rank = int(rank[0].text)
-
-        all_links = tag('a')
-        if not len(all_links) == 2:
-            logging.error('Error parsing links from AP table.')
-        team = all_links[0].text
-        conference = all_links[1].text
-
-        record = tag(class_='poll-record')[0].text.split(' ')[1]
-
-        team_key = '%s:%s' % (team, conference)
-        team_entity = Team.get_or_insert(team_key, name=team, conference=conference)
-        ranking = Ranking(team=team_entity.key, week=week.key, rank=rank, record=record)
-        ranking.put()
-        rankings.append(ranking)
-
-    users = User.get_ap_bb_men_email()
-    email.send_alert(users, rankings, "AP Men's Basketball")
-
-    return response.content
+        return info

@@ -4,15 +4,7 @@ import logging
 
 from flask import render_template
 
-from google.appengine.api import mail
 from google.appengine.api import urlfetch
-from google.appengine.ext import deferred
-
-
-# def send_email(to_address, subject, body):
-
-#     sender = "PollAlerts <mike.philip.davis@gmail.com>"
-#     deferred.defer(mail.send_mail, sender=sender, to=to_address, subject=subject, body=body)
 
 
 def generate_body(template, context=None, **kwargs):
@@ -26,6 +18,9 @@ def generate_body(template, context=None, **kwargs):
 
 
 def send_alert(users, rankings, subject):
+
+    if not users:
+        logging.debug('No users to alert.')
 
     body = generate_body('notifications/email/alert.html', rankings=rankings, title=subject)
     subject = "New PollAlert - %s" % subject
@@ -67,5 +62,3 @@ def send_email(users, subject, html, from_email="no-reply@pollalerts.com", from_
         headers={'Content-Type': 'application/json'},
         payload=json.dumps(payload)
     )
-
-    logging.debug(content.content)

@@ -31,31 +31,16 @@ app.add_url_rule('/ajax/submit_alert', view_func=base_views.SubmitAlert.as_view(
 app.add_url_rule('/oauth/google_login', view_func=auth_views.GoogleLogin.as_view('google_login'))
 app.add_url_rule('/oauth/google_authorized', view_func=auth_views.GoogleAuthorized.as_view('google_authorized'))
 
-app.add_url_rule('/ap/basketball/men', view_func=poll_views.MensBasketball.as_view('ap-basketball-men'))
-app.add_url_rule('/coaches/basketball/men', view_func=poll_views.CoachesBasketballMen.as_view('coaches-basketball-men'))
+app.add_url_rule('/ap/basketball/men', view_func=poll_views.MenAPBasketball.as_view('ap-basketball-men'))
+app.add_url_rule('/ap/basketball/women', view_func=poll_views.WomenAPBasketball.as_view('ap-basketball-women'))
+app.add_url_rule('/coaches/basketball/men', view_func=poll_views.MenCoachesBasketball.as_view('coaches-basketball-men'))
 
 app.add_url_rule('/test', view_func=base_views.Test.as_view('test'))
 
-# # Say hello
-# app.add_url_rule('/hello/<username>', 'say_hello', view_func=views.say_hello)
-
-# # Examples list page
-# app.add_url_rule('/examples', 'list_examples', view_func=views.list_examples, methods=['GET', 'POST'])
-
-# # Examples list page (cached)
-# app.add_url_rule('/examples/cached', 'cached_examples', view_func=views.cached_examples, methods=['GET'])
-
-# # Contrived admin-only view example
-# app.add_url_rule('/admin_only', 'admin_only', view_func=views.admin_only)
-
-# # Edit an example
-# app.add_url_rule('/examples/<int:example_id>/edit', 'edit_example', view_func=views.edit_example, methods=['GET', 'POST'])
-
-# # Delete an example
-# app.add_url_rule('/examples/<int:example_id>/delete', view_func=views.delete_example, methods=['POST'])
-
-app.add_url_rule('/cron/check_basketball', view_func=cron.check_basketball_ap_poll, methods=['GET'])
-app.add_url_rule('/cron/test', view_func=cron.check_basketball_coaches_poll, methods=['GET'])
+app.add_url_rule('/cron/ap/basketball/men', view_func=cron.MenAPBasketball.as_view('cron-ap-men-basketball'), methods=['GET'])
+app.add_url_rule('/cron/coaches/basketball/men', view_func=cron.MenCoachesBasketball.as_view('cron-coaches-men-basketball'), methods=['GET'])
+app.add_url_rule('/cron/ap/basketball/women', view_func=cron.WomenAPBasketball.as_view('cron-ap-women-basketball'), methods=['GET'])
+# app.add_url_rule('/cron/test', view_func=cron.MenAPBasketball.as_view('cron-test'), methods=['GET'])
 
 
 ## Error handlers

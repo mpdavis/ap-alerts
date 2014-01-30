@@ -19,6 +19,10 @@
 
 </div>
 
+<div class="row">
+
+            <div class="col-md-12">
+
 
 <div class="panel panel-info">
             <div class="panel-heading">
@@ -44,7 +48,7 @@
                         <td>AP Poll</td>
                         <td>Women</td>
                         <td>Basketball</td>
-                        <td>Coming Soon!</td>
+                        <td><a href="{{ url_for('ap-basketball-women') }}" class="btn btn-xs btn-success">Go To Poll</a></td>
                     </tr>
                     <tr>
                         <td>USA Today Coaches Poll</td>
@@ -61,6 +65,13 @@
                 </tbody>
             </table>
         </div>
+        </div>
+        </div>
+
+
+<div class="row">
+
+            <div class="col-md-12">
 
 <div class="panel panel-info">
             <div class="panel-heading">
@@ -90,6 +101,8 @@
                     </tr>
                 </tbody>
             </table>
+        </div>
+        </div>
         </div>
 
 {% endblock content %}

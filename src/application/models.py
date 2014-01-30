@@ -41,6 +41,10 @@ class User(ndb.Model):
         return cls.query().filter(User.ap_basketball_men_email == True).fetch()
 
     @classmethod
+    def get_ap_bb_women_email(cls):
+        return cls.query().filter(User.ap_basketball_women_email == True).fetch()
+
+    @classmethod
     def get_coaches_bb_men_email(cls):
         return cls.query().filter(User.coaches_basketball_men_email == True).fetch()
 
@@ -93,6 +97,7 @@ class Sport(ndb.Model):
 
 
 class Poll(ndb.Model):
+    level = ndb.StringProperty(required=True)
     poll = ndb.StringProperty(required=True)
     sport = ndb.StringProperty(required=True)
     gender = ndb.StringProperty(required=True)

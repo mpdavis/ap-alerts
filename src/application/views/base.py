@@ -36,6 +36,7 @@ class Settings(BaseView):
         context = self.get_context()
 
         context['ap_basketball_men_email'] = self.user.ap_basketball_men_email
+        context['ap_basketball_women_email'] = self.user.ap_basketball_women_email
         context['coaches_basketball_men_email'] = self.user.coaches_basketball_men_email
 
         return render_template('settings.html', **context)

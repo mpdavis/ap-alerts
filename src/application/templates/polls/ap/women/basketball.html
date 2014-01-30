@@ -16,8 +16,8 @@
             </div>
 
             <div>
-                <h1 class="pull-left">AP Poll - Men's Basketball</h1>
-                {% if not user.ap_basketball_men_email %}
+                <h1 class="pull-left">AP Poll - Women's Basketball</h1>
+                {% if not user.ap_basketball_women_email %}
                 <button type="button" class="btn btn-info pull-right" style="margin-top: 20px;" data-toggle="modal" data-target="#sign-up-modal">Get alerts for this poll</button>
                 {% else %}
                 <div class="pull-right"><span class="glyphicon glyphicon-ok" style="color: green; margin-top: 40px;"></span> You receive alerts for this poll. <a href="{{ url_for('settings') }}">edit</a></div>
@@ -37,6 +37,7 @@
                         <th>Rank</th>
                         <th>School</th>
                         <th>Record</th>
+                        <th>Previous</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -46,6 +47,7 @@
                         <td>{{ ranking.rank }}</td>
                         <td>{{ team.name }}</td>
                         <td>{{ ranking.record }}</td>
+                        <td>{{ ranking.previous }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -105,7 +107,7 @@
                     "url": "{{ url_for('submit-alert') }}",
                     "method": "POST",
                     "data": {
-                        alert_name: "ap_basketball_men_email"
+                        alert_name: "ap_basketball_women_email"
                     },
                 })
                 .done(function(data) {

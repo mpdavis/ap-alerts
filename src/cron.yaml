@@ -1,5 +1,15 @@
 cron:
-- description: checking ap poll
-  url: /cron/check_basketball
-  schedule: every 1 minutes from 05:00 to 20:00
+- description: ap men basketball
+  url: /cron/ap/basketball/men
+  schedule: every 1 minutes from 9:00 to 15:00
+  timezone: America/Chicago
+
+- description: coaches men basketball
+  url: /cron/coaches/basketball/men
+  schedule: every 1 minutes from 9:00 to 15:00
+  timezone: America/Chicago
+
+- description: ap women basketball
+  url: /cron/ap/basketball/women
+  schedule: every 1 minutes from 9:00 to 15:00
   timezone: America/Chicago

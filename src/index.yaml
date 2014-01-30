@@ -20,3 +20,9 @@ indexes:
   - name: week
   - name: rank
     direction: desc
+
+- kind: Week
+  properties:
+  - name: poll
+  - name: week
+    direction: desc
