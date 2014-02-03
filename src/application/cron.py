@@ -92,7 +92,7 @@ class PollCronView(BaseView):
 
 class WomenAPBasketball(PollCronView):
 
-    url = "http://espn.go.com/womens-college-basketball/rankings/_/poll/1/week/13/"
+    url = "http://espn.go.com/womens-college-basketball/rankings/_/poll/1/"
     level = 'college'
     poll = 'ap'
     sport = 'basketball'
@@ -101,7 +101,14 @@ class WomenAPBasketball(PollCronView):
     email_subject = "Women's AP Poll"
 
     def parse_current_week(self, soup):
-        return '13'
+        all_h2 = soup('h1', class_='h2')
+        week = '0'
+        for h2 in all_h2:
+            if 'ap top 25' in h2.text.lower():
+                line = h2.text.split(' ')
+                if line[11].isdigit():
+                    week = line[11]
+        return week
 
     def parse_team_info(self, soup):
         info = []
@@ -188,7 +195,13 @@ class MenCoachesBasketball(PollCronView):
     email_subject = "Men's USA Today Coaches Poll"
 
     def parse_current_week(self, soup):
-        return '13'
+        try:
+            spans = soup('span', class_='sp-filter-btn sports-weekly-header-dropdown')
+            info = str(spans[1]).split(' ')
+            week = info[11].strip()
+        except Exception:
+            week = '0'
+        return week
 
     def get_users(self):
         return User.get_coaches_bb_men_email()
